@@ -1,6 +1,9 @@
 package main
 
-import "os"
+import (
+	vbx "github.com/boot2docker/boot2docker-cli/virtualbox"
+	"os"
+)
 
 // The following vars will be injected during the build process.
 var (
@@ -26,6 +29,8 @@ func run() int {
 		return 1
 	}
 
+	stdout := os.Stdout
+
 	switch cmd := flags.Arg(0); cmd {
 	case "download":
 		return cmdDownload()
@@ -45,7 +50,7 @@ func run() int {
 		return cmdRestart()
 	case "reset":
 		return cmdReset()
-	case "delete":
+	case "delete", "destroy":
 		return cmdDelete()
 	case "info":
 		return cmdInfo()
@@ -55,6 +60,13 @@ func run() int {
 		return cmdSSH()
 	case "ip":
 		return cmdIP()
+	case "shellsetup":
+		m, err := vbx.GetMachine(B2D.VM)
+		if err != nil {
+			logf("Failed to get machine %q: %s", B2D.VM, err)
+			return 2
+		}
+		return cmdShellSetup(m, stdout)
 	case "version":
 		outf("Client version: %s\nGit commit: %s\n", Version, GitSHA)
 		return 0
